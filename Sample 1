@@ -1,0 +1,641 @@
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Paid Ads Reporting Tool</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&amp;family=Poppins:wght@600;700;800&amp;display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Outfit', sans-serif; }
+    html, body { height: 100%; }
+    .heading-font { font-family: 'Poppins', sans-serif; }
+    .gradient-landing { background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%); }
+    .gradient-dark { background: linear-gradient(180deg, #0f172a 0%, #1a1f3a 50%, #0f172a 100%); }
+    .glass-card { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.12); }
+    .glass-input { background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.1); transition: all 0.3s ease; }
+    .glass-input:focus { background: rgba(255, 255, 255, 0.1); border-color: rgba(102, 126, 234, 0.5); box-shadow: 0 0 20px rgba(102, 126, 234, 0.2); outline: none; }
+    .btn-gradient { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .btn-gradient:hover { transform: translateY(-2px); box-shadow: 0 15px 40px rgba(102, 126, 234, 0.3); }
+    .btn-glass { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); transition: all 0.3s ease; backdrop-filter: blur(10px); }
+    .btn-glass:hover { background: rgba(255, 255, 255, 0.15); border-color: rgba(255, 255, 255, 0.3); }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-fade-in-up { animation: fadeInUp 0.6s ease forwards; }
+    .report-bg { background: linear-gradient(180deg, #ffffff 0%, #f5f7ff 50%, #eef2ff 100%); }
+    .metric-box { background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.04) 100%); border: 1px solid rgba(102, 126, 234, 0.15); border-radius: 12px; }
+    .stat-card { background: white; border: 1px solid rgba(102, 126, 234, 0.1); border-radius: 12px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); }
+    .chart-container { position: relative; height: 320px; background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); }
+    .chart-label { text-align: center; font-weight: 600; color: #1a1f3a; margin-top: 12px; font-size: 14px; }
+    .data-table { width: 100%; border-collapse: collapse; }
+    .data-table th { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px; text-align: left; font-weight: 600; font-size: 13px; }
+    .data-table td { padding: 12px; border-bottom: 1px solid #eef2ff; font-size: 14px; }
+    .data-table tr:hover { background: #f5f7ff; }
+    .insight-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; }
+    .insight-dot { width: 8px; height: 8px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; margin-top: 6px; flex-shrink: 0; }
+    .platform-card { background: rgba(102, 126, 234, 0.04); border-left: 4px solid #667eea; padding: 16px; border-radius: 8px; margin-bottom: 12px; }
+    @media print { .no-print { display: none !important; } }
+  </style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full gradient-dark text-white overflow-auto">
+  <div id="app" class="min-h-full w-full"><!-- Landing View -->
+   <div id="landing-view" class="min-h-full flex flex-col items-center justify-center p-6 gradient-landing">
+    <div class="text-center max-w-2xl">
+     <div style="animation-delay: 0.1s;" class="animate-fade-in-up">
+      <div class="w-20 h-20 mx-auto mb-8 rounded-2xl bg-white/20 backdrop-blur-lg flex items-center justify-center shadow-2xl border border-white/30">
+       <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+       </svg>
+      </div>
+      <h1 class="heading-font text-5xl md:text-6xl font-bold mb-4 text-white">Paid Ads Reporting Tool</h1>
+      <p class="text-xl text-white/90 mb-2">Create reports in <span class="font-bold">&lt;10 mins</span></p>
+      <p class="text-white/80 text-lg mb-12 leading-relaxed max-w-xl mx-auto">Focus your time on presenting the data. We handle the formatting and visualization.</p>
+     </div>
+     <div style="animation-delay: 0.2s;" class="animate-fade-in-up"><button onclick="showCreateForm()" class="btn-gradient px-10 py-4 rounded-xl font-bold text-lg text-white inline-flex items-center gap-3 mb-16">
+       <svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+       </svg> Create Report </button>
+     </div>
+     <div style="animation-delay: 0.3s;" class="animate-fade-in-up grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
+      <div class="glass-card rounded-xl p-6 border-white/20">
+       <div class="w-12 h-12 rounded-lg bg-white/20 flex items-center justify-center mb-4 text-2xl">
+        📋
+       </div>
+       <h3 class="font-bold text-white mb-2 text-lg">Enter Data</h3>
+       <p class="text-white/70 text-sm">Paste from Excel or type metrics directly</p>
+      </div>
+      <div class="glass-card rounded-xl p-6 border-white/20">
+       <div class="w-12 h-12 rounded-lg bg-white/20 flex items-center justify-center mb-4 text-2xl">
+        💡
+       </div>
+       <h3 class="font-bold text-white mb-2 text-lg">Add Insights</h3>
+       <p class="text-white/70 text-sm">Include key highlights and pointers</p>
+      </div>
+      <div class="glass-card rounded-xl p-6 border-white/20">
+       <div class="w-12 h-12 rounded-lg bg-white/20 flex items-center justify-center mb-4 text-2xl">
+        📊
+       </div>
+       <h3 class="font-bold text-white mb-2 text-lg">Generate</h3>
+       <p class="text-white/70 text-sm">Beautiful visuals and downloadable PDF</p>
+      </div>
+     </div>
+    </div>
+   </div><!-- Create Form View -->
+   <div id="create-view" class="hidden min-h-full p-4 md:p-6 gradient-dark">
+    <div class="max-w-5xl mx-auto"><button onclick="showLanding()" class="btn-glass px-4 py-2 rounded-lg text-sm inline-flex items-center gap-2 mb-8 no-print text-white">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+      </svg> Back </button>
+     <div class="glass-card rounded-2xl p-8 border-white/10 backdrop-blur-xl">
+      <h2 class="heading-font text-3xl font-bold mb-8 text-white">Create New Report</h2><!-- Brand and Presenter Details -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10 pb-10 border-b border-white/10">
+       <div><label for="brand-name" class="block text-sm text-white/70 mb-3 font-semibold">Brand Name</label> <input type="text" id="brand-name" class="glass-input w-full px-4 py-3 rounded-lg text-white placeholder-white/40" placeholder="Your Brand Name">
+       </div>
+       <div><label for="presenter-name" class="block text-sm text-white/70 mb-3 font-semibold">Presenter Name (Optional)</label> <input type="text" id="presenter-name" class="glass-input w-full px-4 py-3 rounded-lg text-white placeholder-white/40" placeholder="Your Name">
+       </div>
+       <div><label for="reporting-period" class="block text-sm text-white/70 mb-3 font-semibold">Reporting Period</label> <input type="text" id="reporting-period" class="glass-input w-full px-4 py-3 rounded-lg text-white placeholder-white/40" placeholder="e.g., January 2025">
+       </div>
+      </div><!-- Data Input Tabs -->
+      <div class="mb-8">
+       <div class="flex gap-4 mb-6 border-b border-white/10"><button onclick="switchTab('manual')" id="tab-manual" class="px-6 py-3 font-semibold text-white border-b-2 border-white transition active-tab">📝 Manual Entry</button> <button onclick="switchTab('paste')" id="tab-paste" class="px-6 py-3 font-semibold text-white/60 border-b-2 border-transparent transition">📋 Paste from Excel</button>
+       </div><!-- Manual Entry Tab -->
+       <div id="manual-tab" class="block">
+        <div class="flex items-center justify-between mb-6">
+         <h3 class="font-bold text-lg text-white">Platform Performance Data</h3><button onclick="addPlatform()" class="btn-glass px-4 py-2 rounded-lg text-sm inline-flex items-center gap-2 text-white">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg> Add Platform </button>
+        </div>
+        <div id="platforms-container" class="space-y-4 mb-8"><!-- Platform entries -->
+        </div>
+       </div><!-- Paste from Excel Tab -->
+       <div id="paste-tab" class="hidden">
+        <div class="mb-6"><label class="block text-sm text-white/70 mb-3 font-semibold">Paste Platform Data (Tab or Space Separated)</label> <textarea id="paste-data" class="glass-input w-full px-4 py-3 rounded-lg text-white placeholder-white/40 min-h-40 font-mono text-sm" placeholder="Platform Name	Results	Impressions	Clicks	Cost(₹)
+Facebook Ads	150	50000	1200	5000
+Google Ads	200	60000	1500	6000"></textarea>
+        </div><button onclick="parsePasteData()" class="btn-gradient px-6 py-3 rounded-lg font-semibold text-white inline-flex items-center gap-2">
+         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+         </svg> Import Data </button>
+       </div>
+      </div><!-- Key Highlights Section -->
+      <div class="mb-10 pb-10 border-t border-white/10 pt-10">
+       <div class="flex items-center justify-between mb-6">
+        <h3 class="font-bold text-lg text-white">Key Highlights &amp; Pointers</h3><button onclick="addHighlight()" class="btn-glass px-4 py-2 rounded-lg text-sm inline-flex items-center gap-2 text-white">
+         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+         </svg> Add Point </button>
+       </div>
+       <div id="highlights-container" class="space-y-3"><!-- Highlight entries -->
+       </div>
+      </div><!-- Generate Button --> <button onclick="generateReport()" class="btn-gradient w-full py-4 rounded-lg font-bold text-lg text-white inline-flex items-center justify-center gap-3 hover:shadow-2xl">
+       <svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+       </svg> Generate Report </button>
+     </div>
+    </div>
+   </div><!-- Report View -->
+   <div id="report-view" class="hidden min-h-full report-bg">
+    <div class="no-print p-6 flex gap-3 justify-end bg-white border-b border-slate-200 sticky top-0 z-10 shadow-sm"><button onclick="showCreateForm()" class="px-4 py-2 rounded-lg text-sm inline-flex items-center gap-2 bg-blue-50 text-blue-600 hover:bg-blue-100 font-semibold transition">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+      </svg> Edit </button> <button id="pdf-btn" onclick="savePDF()" class="btn-gradient px-6 py-2 rounded-lg text-sm inline-flex items-center gap-2 text-white font-semibold">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+      </svg><span id="pdf-text">Download PDF</span> </button> <button onclick="showLanding()" class="px-4 py-2 rounded-lg text-sm inline-flex items-center gap-2 bg-slate-100 text-slate-700 hover:bg-slate-200 font-semibold transition">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+      </svg> New Report </button>
+    </div>
+    <div id="report-content" class="min-h-full text-slate-800"><!-- Generated report will appear here -->
+    </div>
+   </div>
+  </div>
+  <script>
+    let platformCount = 0;
+    let highlightCount = 0;
+    let chartsData = {};
+
+    function switchTab(tab) {
+      const manualTab = document.getElementById('manual-tab');
+      const pasteTab = document.getElementById('paste-tab');
+      const tabManualBtn = document.getElementById('tab-manual');
+      const tabPasteBtn = document.getElementById('tab-paste');
+
+      if (tab === 'manual') {
+        manualTab.classList.remove('hidden');
+        pasteTab.classList.add('hidden');
+        tabManualBtn.classList.add('active-tab', 'border-white');
+        tabPasteBtn.classList.remove('active-tab', 'border-white');
+        tabManualBtn.classList.add('border-white');
+        tabPasteBtn.classList.remove('border-white');
+        tabManualBtn.classList.remove('text-white/60');
+        tabPasteBtn.classList.add('text-white/60');
+      } else {
+        manualTab.classList.add('hidden');
+        pasteTab.classList.remove('hidden');
+        tabManualBtn.classList.remove('active-tab', 'border-white');
+        tabPasteBtn.classList.add('active-tab', 'border-white');
+        tabManualBtn.classList.remove('border-white');
+        tabPasteBtn.classList.add('border-white');
+        tabManualBtn.classList.add('text-white/60');
+        tabPasteBtn.classList.remove('text-white/60');
+      }
+    }
+
+    function showLanding() {
+      document.getElementById('landing-view').classList.remove('hidden');
+      document.getElementById('create-view').classList.add('hidden');
+      document.getElementById('report-view').classList.add('hidden');
+    }
+
+    function showCreateForm() {
+      document.getElementById('landing-view').classList.add('hidden');
+      document.getElementById('create-view').classList.remove('hidden');
+      document.getElementById('report-view').classList.add('hidden');
+      
+      if (platformCount === 0) {
+        addPlatform();
+      }
+      if (highlightCount === 0) {
+        addHighlight();
+      }
+    }
+
+    function showReport() {
+      document.getElementById('landing-view').classList.add('hidden');
+      document.getElementById('create-view').classList.add('hidden');
+      document.getElementById('report-view').classList.remove('hidden');
+    }
+
+    function addPlatform() {
+      platformCount++;
+      const container = document.getElementById('platforms-container');
+      const platformId = `platform-${platformCount}`;
+      
+      const platformHTML = `
+        <div id="${platformId}" class="glass-card rounded-lg p-6 border-white/10">
+          <div class="flex items-center justify-between mb-4">
+            <input type="text" class="platform-name glass-input px-4 py-2 rounded-lg text-white font-semibold flex-1 mr-3" placeholder="Platform Name (e.g., Facebook Ads)">
+            <button onclick="removePlatform('${platformId}')" class="text-white/60 hover:text-red-400 transition">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+              </svg>
+            </button>
+          </div>
+          
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div>
+              <label class="block text-xs text-white/60 mb-2 font-semibold">Results</label>
+              <input type="number" class="metric-results glass-input w-full px-3 py-2 rounded-lg text-white" placeholder="0" value="0">
+            </div>
+            <div>
+              <label class="block text-xs text-white/60 mb-2 font-semibold">Impressions</label>
+              <input type="number" class="metric-impressions glass-input w-full px-3 py-2 rounded-lg text-white" placeholder="0" value="0">
+            </div>
+            <div>
+              <label class="block text-xs text-white/60 mb-2 font-semibold">Clicks</label>
+              <input type="number" class="metric-clicks glass-input w-full px-3 py-2 rounded-lg text-white" placeholder="0" value="0">
+            </div>
+            <div>
+              <label class="block text-xs text-white/60 mb-2 font-semibold">Cost (₹)</label>
+              <input type="number" class="metric-cost glass-input w-full px-3 py-2 rounded-lg text-white" placeholder="0" value="0">
+            </div>
+          </div>
+        </div>
+      `;
+      
+      container.insertAdjacentHTML('beforeend', platformHTML);
+    }
+
+    function removePlatform(id) {
+      const element = document.getElementById(id);
+      if (element) element.remove();
+    }
+
+    function addHighlight() {
+      highlightCount++;
+      const container = document.getElementById('highlights-container');
+      const highlightId = `highlight-${highlightCount}`;
+      
+      const highlightHTML = `
+        <div id="${highlightId}" class="flex items-center gap-3">
+          <div class="w-3 h-3 rounded-full bg-purple-400 flex-shrink-0 mt-1"></div>
+          <input type="text" class="highlight-text glass-input flex-1 px-4 py-2 rounded-lg text-white placeholder-white/40" placeholder="Enter a key highlight or insight...">
+          <button onclick="removeHighlight('${highlightId}')" class="text-white/60 hover:text-red-400 transition flex-shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+      `;
+      
+      container.insertAdjacentHTML('beforeend', highlightHTML);
+    }
+
+    function removeHighlight(id) {
+      const element = document.getElementById(id);
+      if (element) element.remove();
+    }
+
+    function parsePasteData() {
+      const data = document.getElementById('paste-data').value.trim();
+      if (!data) return;
+      
+      const lines = data.split('\n').filter(line => line.trim());
+      const container = document.getElementById('platforms-container');
+      
+      container.innerHTML = '';
+      platformCount = 0;
+      
+      lines.forEach((line, idx) => {
+        if (idx === 0) return; // Skip header if present
+        const parts = line.split(/[\t\s]+/).filter(p => p);
+        if (parts.length >= 5) {
+          addPlatform();
+          const lastPlatform = container.lastElementChild;
+          lastPlatform.querySelector('.platform-name').value = parts[0];
+          lastPlatform.querySelector('.metric-results').value = parts[1] || '0';
+          lastPlatform.querySelector('.metric-impressions').value = parts[2] || '0';
+          lastPlatform.querySelector('.metric-clicks').value = parts[3] || '0';
+          lastPlatform.querySelector('.metric-cost').value = parts[4] || '0';
+        }
+      });
+      
+      switchTab('manual');
+    }
+
+    function formatNumber(num) {
+      const n = Number(num);
+      if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+      if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
+      return n.toLocaleString();
+    }
+
+    function generateReport() {
+      const brandName = document.getElementById('brand-name').value || 'Your Brand';
+      const presenterName = document.getElementById('presenter-name').value || 'N/A';
+      const reportingPeriod = document.getElementById('reporting-period').value || 'Current Period';
+      
+      const platforms = [];
+      let totalResults = 0, totalImpressions = 0, totalClicks = 0, totalCost = 0;
+      
+      document.querySelectorAll('[id^="platform-"]').forEach(el => {
+        const name = el.querySelector('.platform-name').value || 'Unnamed';
+        const results = parseFloat(el.querySelector('.metric-results').value) || 0;
+        const impressions = parseFloat(el.querySelector('.metric-impressions').value) || 0;
+        const clicks = parseFloat(el.querySelector('.metric-clicks').value) || 0;
+        const cost = parseFloat(el.querySelector('.metric-cost').value) || 0;
+        
+        totalResults += results;
+        totalImpressions += impressions;
+        totalClicks += clicks;
+        totalCost += cost;
+        
+        platforms.push({ name, results, impressions, clicks, cost });
+      });
+      
+      const highlights = [];
+      document.querySelectorAll('.highlight-text').forEach(el => {
+        if (el.value.trim()) highlights.push(el.value.trim());
+      });
+      
+      const ctr = totalImpressions > 0 ? ((totalClicks / totalImpressions) * 100).toFixed(2) : '0.00';
+      const cpc = totalClicks > 0 ? (totalCost / totalClicks).toFixed(2) : '0.00';
+      const cpr = totalResults > 0 ? (totalCost / totalResults).toFixed(2) : '0.00';
+      const resultRate = totalImpressions > 0 ? ((totalResults / totalImpressions) * 100).toFixed(2) : '0.00';
+      
+      chartsData = { platforms, totalResults, totalImpressions, totalClicks, totalCost };
+      
+      const reportHTML = `
+        <div class="p-8 max-w-7xl mx-auto">
+          <!-- Header Section -->
+          <div class="bg-white rounded-2xl shadow-lg p-8 mb-8 border-l-4 border-purple-500">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div>
+                <p class="text-slate-500 text-sm font-semibold mb-1">Brand</p>
+                <h2 class="heading-font text-3xl font-bold text-slate-900">${brandName}</h2>
+              </div>
+              <div>
+                <p class="text-slate-500 text-sm font-semibold mb-1">Presenter</p>
+                <p class="text-xl font-semibold text-slate-800">${presenterName}</p>
+              </div>
+              <div>
+                <p class="text-slate-500 text-sm font-semibold mb-1">Reporting Period</p>
+                <p class="text-xl font-semibold text-slate-800">${reportingPeriod}</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Key Metrics Section -->
+          <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+            <div class="stat-card p-6">
+              <p class="text-slate-500 text-sm font-semibold mb-2">Results</p>
+              <p class="heading-font text-3xl font-bold text-purple-600">${formatNumber(totalResults)}</p>
+            </div>
+            <div class="stat-card p-6">
+              <p class="text-slate-500 text-sm font-semibold mb-2">Impressions</p>
+              <p class="heading-font text-3xl font-bold text-purple-600">${formatNumber(totalImpressions)}</p>
+            </div>
+            <div class="stat-card p-6">
+              <p class="text-slate-500 text-sm font-semibold mb-2">Clicks</p>
+              <p class="heading-font text-3xl font-bold text-purple-600">${formatNumber(totalClicks)}</p>
+            </div>
+            <div class="stat-card p-6">
+              <p class="text-slate-500 text-sm font-semibold mb-2">Total Spend</p>
+              <p class="heading-font text-3xl font-bold text-purple-600">₹${formatNumber(totalCost)}</p>
+            </div>
+            <div class="stat-card p-6">
+              <p class="text-slate-500 text-sm font-semibold mb-2">CTR</p>
+              <p class="heading-font text-3xl font-bold text-purple-600">${ctr}%</p>
+            </div>
+          </div>
+          
+          <!-- Charts Section -->
+          <div class="bg-white rounded-2xl shadow-lg p-8 mb-8">
+            <h3 class="heading-font text-2xl font-bold text-slate-900 mb-8">Platform Performance Distribution</h3>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <!-- Large Results Chart -->
+              <div class="lg:col-span-2">
+                <div class="bg-white border border-slate-200 rounded-xl p-6 h-96">
+                  <canvas id="resultsChart"></canvas>
+                </div>
+                <div class="chart-label mt-4 text-lg">
+                  <span class="font-bold text-purple-600">Platform-wise Results Distribution</span><br>
+                  <span class="text-slate-600">Total: ${formatNumber(totalResults)}</span>
+                </div>
+              </div>
+              
+              <!-- Right Column Charts -->
+              <div class="space-y-6">
+                <!-- Cost Chart -->
+                <div>
+                  <div class="bg-white border border-slate-200 rounded-xl p-6 h-80">
+                    <canvas id="costChart"></canvas>
+                  </div>
+                  <div class="chart-label mt-3">
+                    <span class="font-bold text-purple-600">Platform-wise Cost</span><br>
+                    <span class="text-slate-600 text-sm">Total: ₹${formatNumber(totalCost)}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Second Row of Charts -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
+              <!-- Impressions Chart -->
+              <div>
+                <div class="bg-white border border-slate-200 rounded-xl p-6 h-80">
+                  <canvas id="impressionsChart"></canvas>
+                </div>
+                <div class="chart-label mt-3">
+                  <span class="font-bold text-purple-600">Platform-wise Impressions</span><br>
+                  <span class="text-slate-600 text-sm">Total: ${formatNumber(totalImpressions)}</span>
+                </div>
+              </div>
+              
+              <!-- Clicks Chart -->
+              <div>
+                <div class="bg-white border border-slate-200 rounded-xl p-6 h-80">
+                  <canvas id="clicksChart"></canvas>
+                </div>
+                <div class="chart-label mt-3">
+                  <span class="font-bold text-purple-600">Platform-wise Clicks</span><br>
+                  <span class="text-slate-600 text-sm">Total: ${formatNumber(totalClicks)}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Data Table Section -->
+          <div class="bg-white rounded-2xl shadow-lg p-8 mb-8 overflow-x-auto">
+            <h3 class="heading-font text-2xl font-bold text-slate-900 mb-6">Detailed Performance Data</h3>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Platform</th>
+                  <th>Results</th>
+                  <th>Impressions</th>
+                  <th>Clicks</th>
+                  <th>Cost (₹)</th>
+                  <th>CPR</th>
+                  <th>Result Rate</th>
+                  <th>CTR</th>
+                  <th>CPC</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${platforms.map(p => {
+                  const pCTR = p.impressions > 0 ? ((p.clicks / p.impressions) * 100).toFixed(2) : '0.00';
+                  const pCPC = p.clicks > 0 ? (p.cost / p.clicks).toFixed(2) : '0.00';
+                  const pCPR = p.results > 0 ? (p.cost / p.results).toFixed(2) : '0.00';
+                  const pResultRate = p.impressions > 0 ? ((p.results / p.impressions) * 100).toFixed(2) : '0.00';
+                  return `
+                    <tr>
+                      <td class="font-semibold text-purple-600">${p.name}</td>
+                      <td>${formatNumber(p.results)}</td>
+                      <td>${formatNumber(p.impressions)}</td>
+                      <td>${formatNumber(p.clicks)}</td>
+                      <td>₹${formatNumber(p.cost)}</td>
+                      <td>₹${pCPR}</td>
+                      <td>${pResultRate}%</td>
+                      <td>${pCTR}%</td>
+                      <td>₹${pCPC}</td>
+                    </tr>
+                  `;
+                }).join('')}
+                <tr style="background: #f8fafc; font-weight: bold;">
+                  <td>TOTAL</td>
+                  <td>${formatNumber(totalResults)}</td>
+                  <td>${formatNumber(totalImpressions)}</td>
+                  <td>${formatNumber(totalClicks)}</td>
+                  <td>₹${formatNumber(totalCost)}</td>
+                  <td>₹${cpr}</td>
+                  <td>${resultRate}%</td>
+                  <td>${ctr}%</td>
+                  <td>₹${cpc}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          
+          <!-- Key Insights Section -->
+          ${highlights.length > 0 ? `
+            <div class="bg-white rounded-2xl shadow-lg p-8 mb-8 border-t-4 border-purple-500">
+              <h3 class="heading-font text-2xl font-bold text-slate-900 mb-6">💡 Key Insights & Recommendations</h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                ${highlights.map(h => `
+                  <div class="flex gap-4 p-4 rounded-lg bg-purple-50 border border-purple-100">
+                    <div class="w-2 h-2 rounded-full bg-purple-500 flex-shrink-0 mt-2"></div>
+                    <p class="text-slate-700">${h}</p>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          ` : ''}
+          
+          <!-- Footer -->
+          <div class="text-center py-8 border-t border-slate-200 text-slate-500 text-sm">
+            <p>Report generated on ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+            <p class="mt-2">${brandName} • ${reportingPeriod}</p>
+          </div>
+        </div>
+      `;
+      
+      document.getElementById('report-content').innerHTML = reportHTML;
+      showReport();
+      
+      setTimeout(() => {
+        initCharts();
+      }, 100);
+    }
+
+    function initCharts() {
+      const colors = ['#667eea', '#764ba2', '#f093fb', '#a78bfa', '#ec4899'];
+      const { platforms, totalResults, totalImpressions, totalClicks, totalCost } = chartsData;
+      
+      const chartConfig = {
+        maintainAspectRatio: false,
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              boxWidth: 12,
+              padding: 15,
+              font: { size: 12, weight: '500' },
+              color: '#4b5563'
+            }
+          }
+        }
+      };
+      
+      // Results Chart
+      if (document.getElementById('resultsChart')) {
+        new Chart(document.getElementById('resultsChart'), {
+          type: 'doughnut',
+          data: {
+            labels: platforms.map(p => p.name),
+            datasets: [{
+              data: platforms.map(p => p.results),
+              backgroundColor: colors,
+              borderColor: 'white',
+              borderWidth: 2
+            }]
+          },
+          options: chartConfig
+        });
+      }
+      
+      // Cost Chart
+      if (document.getElementById('costChart')) {
+        new Chart(document.getElementById('costChart'), {
+          type: 'doughnut',
+          data: {
+            labels: platforms.map(p => p.name),
+            datasets: [{
+              data: platforms.map(p => p.cost),
+              backgroundColor: colors,
+              borderColor: 'white',
+              borderWidth: 2
+            }]
+          },
+          options: chartConfig
+        });
+      }
+      
+      // Impressions Chart
+      if (document.getElementById('impressionsChart')) {
+        new Chart(document.getElementById('impressionsChart'), {
+          type: 'doughnut',
+          data: {
+            labels: platforms.map(p => p.name),
+            datasets: [{
+              data: platforms.map(p => p.impressions),
+              backgroundColor: colors,
+              borderColor: 'white',
+              borderWidth: 2
+            }]
+          },
+          options: chartConfig
+        });
+      }
+      
+      // Clicks Chart
+      if (document.getElementById('clicksChart')) {
+        new Chart(document.getElementById('clicksChart'), {
+          type: 'doughnut',
+          data: {
+            labels: platforms.map(p => p.name),
+            datasets: [{
+              data: platforms.map(p => p.clicks),
+              backgroundColor: colors,
+              borderColor: 'white',
+              borderWidth: 2
+            }]
+          },
+          options: chartConfig
+        });
+      }
+    }
+
+    function savePDF() {
+      const btn = document.getElementById('pdf-btn');
+      const btnText = document.getElementById('pdf-text');
+      const original = btnText.textContent;
+      
+      btn.disabled = true;
+      btnText.textContent = 'Generating...';
+      
+      try {
+        window.print();
+        btnText.textContent = 'Ready to Print';
+        setTimeout(() => {
+          btn.disabled = false;
+          btnText.textContent = original;
+        }, 2000);
+      } catch (err) {
+        console.error('Print error:', err);
+        btnText.textContent = 'Error - Try Again';
+        setTimeout(() => {
+          btn.disabled = false;
+          btnText.textContent = original;
+        }, 2000);
+      }
+    }
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9d1db749034179f8',t:'MTc3MTc1NTI2MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
