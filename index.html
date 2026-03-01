@@ -6,636 +6,613 @@
   <title>Paid Ads Reporting Tool</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="/_sdk/element_sdk.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&amp;family=Poppins:wght@600;700;800&amp;display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet">
   <style>
-    * { font-family: 'Outfit', sans-serif; }
-    html, body { height: 100%; }
-    .heading-font { font-family: 'Poppins', sans-serif; }
-    .gradient-landing { background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%); }
-    .gradient-dark { background: linear-gradient(180deg, #0f172a 0%, #1a1f3a 50%, #0f172a 100%); }
-    .glass-card { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.12); }
-    .glass-input { background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.1); transition: all 0.3s ease; }
-    .glass-input:focus { background: rgba(255, 255, 255, 0.1); border-color: rgba(102, 126, 234, 0.5); box-shadow: 0 0 20px rgba(102, 126, 234, 0.2); outline: none; }
-    .btn-gradient { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-    .btn-gradient:hover { transform: translateY(-2px); box-shadow: 0 15px 40px rgba(102, 126, 234, 0.3); }
-    .btn-glass { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); transition: all 0.3s ease; backdrop-filter: blur(10px); }
-    .btn-glass:hover { background: rgba(255, 255, 255, 0.15); border-color: rgba(255, 255, 255, 0.3); }
-    @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-    .animate-fade-in-up { animation: fadeInUp 0.6s ease forwards; }
-    .report-bg { background: linear-gradient(180deg, #ffffff 0%, #f5f7ff 50%, #eef2ff 100%); }
-    .metric-box { background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.04) 100%); border: 1px solid rgba(102, 126, 234, 0.15); border-radius: 12px; }
-    .stat-card { background: white; border: 1px solid rgba(102, 126, 234, 0.1); border-radius: 12px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); }
-    .chart-container { position: relative; height: 320px; background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); }
-    .chart-label { text-align: center; font-weight: 600; color: #1a1f3a; margin-top: 12px; font-size: 14px; }
-    .data-table { width: 100%; border-collapse: collapse; }
-    .data-table th { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px; text-align: left; font-weight: 600; font-size: 13px; }
-    .data-table td { padding: 12px; border-bottom: 1px solid #eef2ff; font-size: 14px; }
-    .data-table tr:hover { background: #f5f7ff; }
-    .insight-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; }
-    .insight-dot { width: 8px; height: 8px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; margin-top: 6px; flex-shrink: 0; }
-    .platform-card { background: rgba(102, 126, 234, 0.04); border-left: 4px solid #667eea; padding: 16px; border-radius: 8px; margin-bottom: 12px; }
-    @media print { .no-print { display: none !important; } }
+    * { font-family: 'Inter', sans-serif; }
+    .heading-font { font-family: 'Space Grotesk', sans-serif; }
+    
+    @media print {
+      @page {
+        size: A4 portrait;
+        margin: 0;
+      }
+      body * {
+        visibility: hidden;
+      }
+      #report-page, #report-page * {
+        visibility: visible;
+      }
+      #report-page {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 210mm;
+        height: 297mm;
+        padding: 15mm;
+        box-sizing: border-box;
+      }
+      .no-print {
+        display: none !important;
+      }
+    }
+    
+    .donut-chart {
+      transform: rotate(-90deg);
+    }
+    
+    .table-input:focus {
+      outline: none;
+      background: #f0f9ff;
+    }
+    
+    .paste-area {
+      min-height: 200px;
+      font-family: monospace;
+      font-size: 12px;
+    }
+    
+    .gradient-bg {
+      background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);
+    }
+    
+    .card-gradient {
+      background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+    }
   </style>
   <style>body { box-sizing: border-box; }</style>
   <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
  </head>
- <body class="h-full gradient-dark text-white overflow-auto">
-  <div id="app" class="min-h-full w-full"><!-- Landing View -->
-   <div id="landing-view" class="min-h-full flex flex-col items-center justify-center p-6 gradient-landing">
-    <div class="text-center max-w-2xl">
-     <div style="animation-delay: 0.1s;" class="animate-fade-in-up">
-      <div class="w-20 h-20 mx-auto mb-8 rounded-2xl bg-white/20 backdrop-blur-lg flex items-center justify-center shadow-2xl border border-white/30">
-       <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-       </svg>
-      </div>
-      <h1 class="heading-font text-5xl md:text-6xl font-bold mb-4 text-white">Paid Ads Reporting Tool</h1>
-      <p class="text-xl text-white/90 mb-2">Create reports in <span class="font-bold">&lt;10 mins</span></p>
-      <p class="text-white/80 text-lg mb-12 leading-relaxed max-w-xl mx-auto">Focus your time on presenting the data. We handle the formatting and visualization.</p>
+ <body class="h-full bg-slate-900 overflow-auto">
+  <div id="app-container" class="w-full min-h-full"><!-- Page 1: Landing -->
+   <div id="page-1" class="min-h-full gradient-bg flex flex-col items-center justify-center p-8">
+    <div class="max-w-2xl text-center">
+     <div class="mb-8">
+      <svg class="w-20 h-20 mx-auto mb-6" viewbox="0 0 80 80" fill="none"><circle cx="40" cy="40" r="38" stroke="#3b82f6" stroke-width="4" fill="none" /> <path d="M25 45 L35 55 L55 30" stroke="#10b981" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none" /> <circle cx="40" cy="40" r="20" stroke="#60a5fa" stroke-width="2" stroke-dasharray="8 4" fill="none" />
+      </svg>
      </div>
-     <div style="animation-delay: 0.2s;" class="animate-fade-in-up"><button onclick="showCreateForm()" class="btn-gradient px-10 py-4 rounded-xl font-bold text-lg text-white inline-flex items-center gap-3 mb-16">
-       <svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-       </svg> Create Report </button>
-     </div>
-     <div style="animation-delay: 0.3s;" class="animate-fade-in-up grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
-      <div class="glass-card rounded-xl p-6 border-white/20">
-       <div class="w-12 h-12 rounded-lg bg-white/20 flex items-center justify-center mb-4 text-2xl">
-        📋
-       </div>
-       <h3 class="font-bold text-white mb-2 text-lg">Enter Data</h3>
-       <p class="text-white/70 text-sm">Paste from Excel or type metrics directly</p>
-      </div>
-      <div class="glass-card rounded-xl p-6 border-white/20">
-       <div class="w-12 h-12 rounded-lg bg-white/20 flex items-center justify-center mb-4 text-2xl">
-        💡
-       </div>
-       <h3 class="font-bold text-white mb-2 text-lg">Add Insights</h3>
-       <p class="text-white/70 text-sm">Include key highlights and pointers</p>
-      </div>
-      <div class="glass-card rounded-xl p-6 border-white/20">
-       <div class="w-12 h-12 rounded-lg bg-white/20 flex items-center justify-center mb-4 text-2xl">
-        📊
-       </div>
-       <h3 class="font-bold text-white mb-2 text-lg">Generate</h3>
-       <p class="text-white/70 text-sm">Beautiful visuals and downloadable PDF</p>
-      </div>
-     </div>
+     <h1 id="main-heading" class="heading-font text-4xl md:text-5xl font-bold text-white mb-4">Paid Ads Reporting Tool</h1>
+     <p id="sub-heading" class="text-lg text-slate-300 mb-10 leading-relaxed">Create reports in &lt;10 mins and focus your time on presenting the data.</p><button onclick="showPage(2)" class="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl shadow-lg shadow-blue-600/30 transition-all transform hover:scale-105"> Create Report → </button>
     </div>
-   </div><!-- Create Form View -->
-   <div id="create-view" class="hidden min-h-full p-4 md:p-6 gradient-dark">
-    <div class="max-w-5xl mx-auto"><button onclick="showLanding()" class="btn-glass px-4 py-2 rounded-lg text-sm inline-flex items-center gap-2 mb-8 no-print text-white">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-      </svg> Back </button>
-     <div class="glass-card rounded-2xl p-8 border-white/10 backdrop-blur-xl">
-      <h2 class="heading-font text-3xl font-bold mb-8 text-white">Create New Report</h2><!-- Brand and Presenter Details -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10 pb-10 border-b border-white/10">
-       <div><label for="brand-name" class="block text-sm text-white/70 mb-3 font-semibold">Brand Name</label> <input type="text" id="brand-name" class="glass-input w-full px-4 py-3 rounded-lg text-white placeholder-white/40" placeholder="Your Brand Name">
+    <div class="absolute bottom-8 text-slate-500 text-sm">
+     Click on the Create Report button to create a new report
+    </div>
+   </div><!-- Page 2: Data Input -->
+   <div id="page-2" class="min-h-full gradient-bg p-6 hidden">
+    <div class="max-w-5xl mx-auto"><button onclick="showPage(1)" class="mb-6 text-slate-400 hover:text-white flex items-center gap-2 transition-colors"> ← Back to Home </button>
+     <div class="card-gradient rounded-2xl shadow-2xl p-8">
+      <h2 class="heading-font text-2xl font-bold text-slate-800 mb-6">Report Details</h2><!-- Basic Info -->
+      <div class="grid md:grid-cols-3 gap-4 mb-8">
+       <div><label class="block text-sm font-medium text-slate-600 mb-2">Brand Name *</label> <input type="text" id="brand-name" placeholder="Enter brand name" class="w-full px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
        </div>
-       <div><label for="presenter-name" class="block text-sm text-white/70 mb-3 font-semibold">Presenter Name (Optional)</label> <input type="text" id="presenter-name" class="glass-input w-full px-4 py-3 rounded-lg text-white placeholder-white/40" placeholder="Your Name">
+       <div><label class="block text-sm font-medium text-slate-600 mb-2">Presenter Name (Optional)</label> <input type="text" id="presenter-name" placeholder="Enter presenter name" class="w-full px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
        </div>
-       <div><label for="reporting-period" class="block text-sm text-white/70 mb-3 font-semibold">Reporting Period</label> <input type="text" id="reporting-period" class="glass-input w-full px-4 py-3 rounded-lg text-white placeholder-white/40" placeholder="e.g., January 2025">
+       <div><label class="block text-sm font-medium text-slate-600 mb-2">Reporting Period *</label> <input type="text" id="reporting-period" placeholder="e.g., Jan 2024 - Mar 2024" class="w-full px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
        </div>
-      </div><!-- Data Input Tabs -->
-      <div class="mb-8">
-       <div class="flex gap-4 mb-6 border-b border-white/10"><button onclick="switchTab('manual')" id="tab-manual" class="px-6 py-3 font-semibold text-white border-b-2 border-white transition active-tab">📝 Manual Entry</button> <button onclick="switchTab('paste')" id="tab-paste" class="px-6 py-3 font-semibold text-white/60 border-b-2 border-transparent transition">📋 Paste from Excel</button>
-       </div><!-- Manual Entry Tab -->
-       <div id="manual-tab" class="block">
-        <div class="flex items-center justify-between mb-6">
-         <h3 class="font-bold text-lg text-white">Platform Performance Data</h3><button onclick="addPlatform()" class="btn-glass px-4 py-2 rounded-lg text-sm inline-flex items-center gap-2 text-white">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-          </svg> Add Platform </button>
+      </div><!-- Data Input Method Tabs -->
+      <div class="mb-6">
+       <h3 class="heading-font text-lg font-semibold text-slate-800 mb-4">Platform Performance Data</h3>
+       <div class="flex gap-2 mb-4"><button onclick="switchInputMethod('table')" id="tab-table" class="px-4 py-2 rounded-lg font-medium transition-all bg-blue-600 text-white"> 📋 Paste from Excel/Sheets </button> <button onclick="switchInputMethod('manual')" id="tab-manual" class="px-4 py-2 rounded-lg font-medium transition-all bg-slate-200 text-slate-600 hover:bg-slate-300"> ✏️ Manual Entry </button>
+       </div>
+      </div><!-- Paste Method -->
+      <div id="input-table" class="mb-6">
+       <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4">
+        <p class="text-sm text-amber-800"><strong>Format:</strong> Copy data from Excel/Sheets with columns: Platform, Results, Impressions, Clicks, Cost(₹)<br><span class="text-amber-600">Tab-separated values will be automatically parsed.</span></p>
+       </div><textarea id="paste-area" class="w-full paste-area p-4 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Paste your data here...
+
+Example:
+Google Ads	150	50000	2500	25000
+Meta Ads	200	80000	3500	30000
+LinkedIn Ads	75	20000	1000	15000"></textarea> <button onclick="parseTableData()" class="mt-3 px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition-all"> Parse Data </button>
+      </div><!-- Manual Entry Method -->
+      <div id="input-manual" class="mb-6 hidden">
+       <div class="overflow-x-auto">
+        <table class="w-full border-collapse">
+         <thead>
+          <tr class="bg-slate-100">
+           <th class="px-3 py-2 text-left text-sm font-semibold text-slate-700 border">Platform</th>
+           <th class="px-3 py-2 text-left text-sm font-semibold text-slate-700 border">Results</th>
+           <th class="px-3 py-2 text-left text-sm font-semibold text-slate-700 border">Impressions</th>
+           <th class="px-3 py-2 text-left text-sm font-semibold text-slate-700 border">Clicks</th>
+           <th class="px-3 py-2 text-left text-sm font-semibold text-slate-700 border">Cost (₹)</th>
+           <th class="px-3 py-2 text-center text-sm font-semibold text-slate-700 border w-12"></th>
+          </tr>
+         </thead>
+         <tbody id="manual-table-body"><!-- Rows added dynamically -->
+         </tbody>
+        </table>
+       </div><button onclick="addManualRow()" class="mt-3 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-500 transition-all"> + Add Platform </button>
+      </div><!-- Data Preview -->
+      <div id="data-preview" class="mb-6 hidden">
+       <h4 class="font-semibold text-slate-700 mb-3">📊 Data Preview</h4>
+       <div class="overflow-x-auto bg-slate-50 rounded-lg p-4">
+        <table class="w-full text-sm">
+         <thead>
+          <tr class="border-b border-slate-300">
+           <th class="px-3 py-2 text-left font-semibold">Platform</th>
+           <th class="px-3 py-2 text-right font-semibold">Results</th>
+           <th class="px-3 py-2 text-right font-semibold">Impressions</th>
+           <th class="px-3 py-2 text-right font-semibold">Clicks</th>
+           <th class="px-3 py-2 text-right font-semibold">Cost (₹)</th>
+          </tr>
+         </thead>
+         <tbody id="preview-body"></tbody>
+        </table>
+       </div>
+      </div><!-- Key Pointers -->
+      <div class="mb-8"><label class="block text-sm font-medium text-slate-600 mb-2">Key Pointers (Performance Insights)</label>
+       <div id="pointers-container">
+        <div class="flex gap-2 mb-2"><input type="text" class="pointer-input flex-1 px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Enter key insight or observation..."> <button onclick="addPointer()" class="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-500">+</button>
         </div>
-        <div id="platforms-container" class="space-y-4 mb-8"><!-- Platform entries -->
-        </div>
-       </div><!-- Paste from Excel Tab -->
-       <div id="paste-tab" class="hidden">
-        <div class="mb-6"><label class="block text-sm text-white/70 mb-3 font-semibold">Paste Platform Data (Tab or Space Separated)</label> <textarea id="paste-data" class="glass-input w-full px-4 py-3 rounded-lg text-white placeholder-white/40 min-h-40 font-mono text-sm" placeholder="Platform Name	Results	Impressions	Clicks	Cost(₹)
-Facebook Ads	150	50000	1200	5000
-Google Ads	200	60000	1500	6000"></textarea>
-        </div><button onclick="parsePasteData()" class="btn-gradient px-6 py-3 rounded-lg font-semibold text-white inline-flex items-center gap-2">
-         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-         </svg> Import Data </button>
        </div>
-      </div><!-- Key Highlights Section -->
-      <div class="mb-10 pb-10 border-t border-white/10 pt-10">
-       <div class="flex items-center justify-between mb-6">
-        <h3 class="font-bold text-lg text-white">Key Highlights &amp; Pointers</h3><button onclick="addHighlight()" class="btn-glass px-4 py-2 rounded-lg text-sm inline-flex items-center gap-2 text-white">
-         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-         </svg> Add Point </button>
-       </div>
-       <div id="highlights-container" class="space-y-3"><!-- Highlight entries -->
-       </div>
-      </div><!-- Generate Button --> <button onclick="generateReport()" class="btn-gradient w-full py-4 rounded-lg font-bold text-lg text-white inline-flex items-center justify-center gap-3 hover:shadow-2xl">
-       <svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-       </svg> Generate Report </button>
+      </div><!-- Generate Button -->
+      <div class="text-center"><button onclick="generateReport()" class="px-10 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105"> Generate Report → </button>
+       <p id="error-msg" class="mt-3 text-red-500 text-sm hidden"></p>
+      </div>
      </div>
     </div>
-   </div><!-- Report View -->
-   <div id="report-view" class="hidden min-h-full report-bg">
-    <div class="no-print p-6 flex gap-3 justify-end bg-white border-b border-slate-200 sticky top-0 z-10 shadow-sm"><button onclick="showCreateForm()" class="px-4 py-2 rounded-lg text-sm inline-flex items-center gap-2 bg-blue-50 text-blue-600 hover:bg-blue-100 font-semibold transition">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-      </svg> Edit </button> <button id="pdf-btn" onclick="savePDF()" class="btn-gradient px-6 py-2 rounded-lg text-sm inline-flex items-center gap-2 text-white font-semibold">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-      </svg><span id="pdf-text">Download PDF</span> </button> <button onclick="showLanding()" class="px-4 py-2 rounded-lg text-sm inline-flex items-center gap-2 bg-slate-100 text-slate-700 hover:bg-slate-200 font-semibold transition">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-      </svg> New Report </button>
-    </div>
-    <div id="report-content" class="min-h-full text-slate-800"><!-- Generated report will appear here -->
+   </div><!-- Page 3: Report -->
+   <div id="page-3" class="min-h-full bg-white p-6 hidden">
+    <div class="no-print max-w-4xl mx-auto mb-4 flex gap-3"><button onclick="showPage(2)" class="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 transition-all"> ← Edit Report </button> <button onclick="downloadPDF()" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-all font-medium"> 📥 Download PDF </button>
+    </div><!-- A4 Report Container -->
+    <div id="report-page" class="mx-auto bg-white shadow-2xl" style="width: 210mm; min-height: 297mm; padding: 15mm; box-sizing: border-box;"><!-- Section 1: Header -->
+     <div id="report-header" class="text-center mb-8 pb-6 border-b-2 border-slate-200">
+      <h1 id="report-brand" class="heading-font text-3xl font-bold text-slate-800 mb-2"></h1>
+      <p id="report-period" class="text-lg text-slate-600 mb-1"></p>
+      <p id="report-presenter" class="text-sm text-slate-500"></p>
+     </div><!-- Section 2: Charts -->
+     <div id="report-charts" class="mb-8">
+      <h2 class="heading-font text-xl font-bold text-slate-700 mb-4">Performance Overview</h2>
+      <div class="flex gap-6"><!-- LHS: Big Results Donut -->
+       <div class="flex-shrink-0">
+        <div class="text-center mb-2"><span class="text-sm font-semibold text-slate-600">Results by Platform</span>
+        </div>
+        <svg id="chart-results" width="190" height="190" viewbox="0 0 190 190"></svg>
+        <div id="legend-results" class="mt-2 text-xs"></div>
+       </div><!-- RHS: Cost, Impressions, Clicks -->
+       <div class="flex-1">
+        <div class="mb-4">
+         <div class="text-center mb-1"><span class="text-xs font-semibold text-slate-600">Cost Distribution</span>
+         </div>
+         <svg id="chart-cost" width="120" height="120" viewbox="0 0 120 120" class="mx-auto"></svg>
+         <div id="legend-cost" class="mt-1 text-xs text-center"></div>
+        </div>
+        <div class="flex gap-4 justify-center">
+         <div class="text-center"><span class="text-xs font-semibold text-slate-600 block mb-1">Impressions</span>
+          <svg id="chart-impressions" width="80" height="80" viewbox="0 0 80 80"></svg>
+         </div>
+         <div class="text-center"><span class="text-xs font-semibold text-slate-600 block mb-1">Clicks</span>
+          <svg id="chart-clicks" width="80" height="80" viewbox="0 0 80 80"></svg>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div><!-- Section 3: Data Table -->
+     <div id="report-table-section" class="mb-6">
+      <h2 class="heading-font text-xl font-bold text-slate-700 mb-3">Detailed Metrics</h2>
+      <table class="w-full text-sm border-collapse">
+       <thead>
+        <tr class="bg-slate-700 text-white">
+         <th class="px-2 py-2 text-left font-semibold">Platform</th>
+         <th class="px-2 py-2 text-right font-semibold">Results</th>
+         <th class="px-2 py-2 text-right font-semibold">Cost (₹)</th>
+         <th class="px-2 py-2 text-right font-semibold">Impr.</th>
+         <th class="px-2 py-2 text-right font-semibold">Clicks</th>
+         <th class="px-2 py-2 text-right font-semibold">CPR (₹)</th>
+         <th class="px-2 py-2 text-right font-semibold">Result Rate</th>
+         <th class="px-2 py-2 text-right font-semibold">CTR</th>
+         <th class="px-2 py-2 text-right font-semibold">CPC (₹)</th>
+        </tr>
+       </thead>
+       <tbody id="report-table-body"></tbody>
+       <tfoot id="report-table-footer"></tfoot>
+      </table>
+     </div><!-- Key Pointers -->
+     <div id="report-pointers" class="bg-slate-50 rounded-lg p-4">
+      <h3 class="heading-font font-bold text-slate-700 mb-2">📌 Key Insights</h3>
+      <ul id="pointers-list" class="list-disc list-inside text-sm text-slate-600 space-y-1"></ul>
+     </div>
     </div>
    </div>
   </div>
   <script>
-    let platformCount = 0;
-    let highlightCount = 0;
-    let chartsData = {};
-
-    function switchTab(tab) {
-      const manualTab = document.getElementById('manual-tab');
-      const pasteTab = document.getElementById('paste-tab');
-      const tabManualBtn = document.getElementById('tab-manual');
-      const tabPasteBtn = document.getElementById('tab-paste');
-
-      if (tab === 'manual') {
-        manualTab.classList.remove('hidden');
-        pasteTab.classList.add('hidden');
-        tabManualBtn.classList.add('active-tab', 'border-white');
-        tabPasteBtn.classList.remove('active-tab', 'border-white');
-        tabManualBtn.classList.add('border-white');
-        tabPasteBtn.classList.remove('border-white');
-        tabManualBtn.classList.remove('text-white/60');
-        tabPasteBtn.classList.add('text-white/60');
+    // Config and SDK setup
+    const defaultConfig = {
+      main_heading: 'Paid Ads Reporting Tool',
+      sub_heading: 'Create reports in <10 mins and focus your time on presenting the data.',
+      primary_color: '#1e3a5f',
+      secondary_color: '#3b82f6',
+      text_color: '#1e293b',
+      accent_color: '#10b981',
+      background_color: '#0f172a'
+    };
+    
+    let config = { ...defaultConfig };
+    
+    // Data storage
+    let platformData = [];
+    let keyPointers = [];
+    
+    // Chart colors
+    const chartColors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'];
+    
+    // Initialize SDK
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange: async (newConfig) => {
+          config = { ...defaultConfig, ...newConfig };
+          updateUI();
+        },
+        mapToCapabilities: (cfg) => ({
+          recolorables: [
+            { get: () => cfg.primary_color || defaultConfig.primary_color, set: (v) => { cfg.primary_color = v; window.elementSdk.setConfig({ primary_color: v }); } },
+            { get: () => cfg.secondary_color || defaultConfig.secondary_color, set: (v) => { cfg.secondary_color = v; window.elementSdk.setConfig({ secondary_color: v }); } },
+            { get: () => cfg.text_color || defaultConfig.text_color, set: (v) => { cfg.text_color = v; window.elementSdk.setConfig({ text_color: v }); } },
+            { get: () => cfg.accent_color || defaultConfig.accent_color, set: (v) => { cfg.accent_color = v; window.elementSdk.setConfig({ accent_color: v }); } },
+            { get: () => cfg.background_color || defaultConfig.background_color, set: (v) => { cfg.background_color = v; window.elementSdk.setConfig({ background_color: v }); } }
+          ],
+          borderables: [],
+          fontEditable: undefined,
+          fontSizeable: undefined
+        }),
+        mapToEditPanelValues: (cfg) => new Map([
+          ['main_heading', cfg.main_heading || defaultConfig.main_heading],
+          ['sub_heading', cfg.sub_heading || defaultConfig.sub_heading]
+        ])
+      });
+    }
+    
+    function updateUI() {
+      document.getElementById('main-heading').textContent = config.main_heading || defaultConfig.main_heading;
+      document.getElementById('sub-heading').textContent = config.sub_heading || defaultConfig.sub_heading;
+    }
+    
+    // Page navigation
+    function showPage(pageNum) {
+      document.getElementById('page-1').classList.add('hidden');
+      document.getElementById('page-2').classList.add('hidden');
+      document.getElementById('page-3').classList.add('hidden');
+      document.getElementById('page-' + pageNum).classList.remove('hidden');
+      
+      if (pageNum === 2) {
+        initManualTable();
+      }
+    }
+    
+    // Input method switching
+    function switchInputMethod(method) {
+      const tabTable = document.getElementById('tab-table');
+      const tabManual = document.getElementById('tab-manual');
+      const inputTable = document.getElementById('input-table');
+      const inputManual = document.getElementById('input-manual');
+      
+      if (method === 'table') {
+        tabTable.className = 'px-4 py-2 rounded-lg font-medium transition-all bg-blue-600 text-white';
+        tabManual.className = 'px-4 py-2 rounded-lg font-medium transition-all bg-slate-200 text-slate-600 hover:bg-slate-300';
+        inputTable.classList.remove('hidden');
+        inputManual.classList.add('hidden');
       } else {
-        manualTab.classList.add('hidden');
-        pasteTab.classList.remove('hidden');
-        tabManualBtn.classList.remove('active-tab', 'border-white');
-        tabPasteBtn.classList.add('active-tab', 'border-white');
-        tabManualBtn.classList.remove('border-white');
-        tabPasteBtn.classList.add('border-white');
-        tabManualBtn.classList.add('text-white/60');
-        tabPasteBtn.classList.remove('text-white/60');
+        tabManual.className = 'px-4 py-2 rounded-lg font-medium transition-all bg-blue-600 text-white';
+        tabTable.className = 'px-4 py-2 rounded-lg font-medium transition-all bg-slate-200 text-slate-600 hover:bg-slate-300';
+        inputManual.classList.remove('hidden');
+        inputTable.classList.add('hidden');
       }
     }
-
-    function showLanding() {
-      document.getElementById('landing-view').classList.remove('hidden');
-      document.getElementById('create-view').classList.add('hidden');
-      document.getElementById('report-view').classList.add('hidden');
-    }
-
-    function showCreateForm() {
-      document.getElementById('landing-view').classList.add('hidden');
-      document.getElementById('create-view').classList.remove('hidden');
-      document.getElementById('report-view').classList.add('hidden');
-      
-      if (platformCount === 0) {
-        addPlatform();
-      }
-      if (highlightCount === 0) {
-        addHighlight();
+    
+    // Initialize manual entry table
+    function initManualTable() {
+      const tbody = document.getElementById('manual-table-body');
+      if (tbody.children.length === 0) {
+        addManualRow();
+        addManualRow();
+        addManualRow();
       }
     }
-
-    function showReport() {
-      document.getElementById('landing-view').classList.add('hidden');
-      document.getElementById('create-view').classList.add('hidden');
-      document.getElementById('report-view').classList.remove('hidden');
-    }
-
-    function addPlatform() {
-      platformCount++;
-      const container = document.getElementById('platforms-container');
-      const platformId = `platform-${platformCount}`;
-      
-      const platformHTML = `
-        <div id="${platformId}" class="glass-card rounded-lg p-6 border-white/10">
-          <div class="flex items-center justify-between mb-4">
-            <input type="text" class="platform-name glass-input px-4 py-2 rounded-lg text-white font-semibold flex-1 mr-3" placeholder="Platform Name (e.g., Facebook Ads)">
-            <button onclick="removePlatform('${platformId}')" class="text-white/60 hover:text-red-400 transition">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-              </svg>
-            </button>
-          </div>
-          
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div>
-              <label class="block text-xs text-white/60 mb-2 font-semibold">Results</label>
-              <input type="number" class="metric-results glass-input w-full px-3 py-2 rounded-lg text-white" placeholder="0" value="0">
-            </div>
-            <div>
-              <label class="block text-xs text-white/60 mb-2 font-semibold">Impressions</label>
-              <input type="number" class="metric-impressions glass-input w-full px-3 py-2 rounded-lg text-white" placeholder="0" value="0">
-            </div>
-            <div>
-              <label class="block text-xs text-white/60 mb-2 font-semibold">Clicks</label>
-              <input type="number" class="metric-clicks glass-input w-full px-3 py-2 rounded-lg text-white" placeholder="0" value="0">
-            </div>
-            <div>
-              <label class="block text-xs text-white/60 mb-2 font-semibold">Cost (₹)</label>
-              <input type="number" class="metric-cost glass-input w-full px-3 py-2 rounded-lg text-white" placeholder="0" value="0">
-            </div>
-          </div>
-        </div>
+    
+    // Add row to manual table
+    function addManualRow() {
+      const tbody = document.getElementById('manual-table-body');
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td class="border"><input type="text" class="table-input w-full px-2 py-2" placeholder="Platform name"></td>
+        <td class="border"><input type="number" class="table-input w-full px-2 py-2 text-right" placeholder="0"></td>
+        <td class="border"><input type="number" class="table-input w-full px-2 py-2 text-right" placeholder="0"></td>
+        <td class="border"><input type="number" class="table-input w-full px-2 py-2 text-right" placeholder="0"></td>
+        <td class="border"><input type="number" class="table-input w-full px-2 py-2 text-right" placeholder="0"></td>
+        <td class="border text-center">
+          <button onclick="this.closest('tr').remove(); updatePreview();" class="text-red-500 hover:text-red-700 px-2">✕</button>
+        </td>
       `;
       
-      container.insertAdjacentHTML('beforeend', platformHTML);
+      // Add change listeners
+      row.querySelectorAll('input').forEach(input => {
+        input.addEventListener('change', updatePreview);
+        input.addEventListener('input', updatePreview);
+      });
+      
+      tbody.appendChild(row);
     }
-
-    function removePlatform(id) {
-      const element = document.getElementById(id);
-      if (element) element.remove();
-    }
-
-    function addHighlight() {
-      highlightCount++;
-      const container = document.getElementById('highlights-container');
-      const highlightId = `highlight-${highlightCount}`;
+    
+    // Parse pasted table data
+    function parseTableData() {
+      const pasteArea = document.getElementById('paste-area');
+      const text = pasteArea.value.trim();
       
-      const highlightHTML = `
-        <div id="${highlightId}" class="flex items-center gap-3">
-          <div class="w-3 h-3 rounded-full bg-purple-400 flex-shrink-0 mt-1"></div>
-          <input type="text" class="highlight-text glass-input flex-1 px-4 py-2 rounded-lg text-white placeholder-white/40" placeholder="Enter a key highlight or insight...">
-          <button onclick="removeHighlight('${highlightId}')" class="text-white/60 hover:text-red-400 transition flex-shrink-0">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-            </svg>
-          </button>
-        </div>
-      `;
+      if (!text) return;
       
-      container.insertAdjacentHTML('beforeend', highlightHTML);
-    }
-
-    function removeHighlight(id) {
-      const element = document.getElementById(id);
-      if (element) element.remove();
-    }
-
-    function parsePasteData() {
-      const data = document.getElementById('paste-data').value.trim();
-      if (!data) return;
+      platformData = [];
+      const lines = text.split('\n');
       
-      const lines = data.split('\n').filter(line => line.trim());
-      const container = document.getElementById('platforms-container');
-      
-      container.innerHTML = '';
-      platformCount = 0;
-      
-      lines.forEach((line, idx) => {
-        if (idx === 0) return; // Skip header if present
-        const parts = line.split(/[\t\s]+/).filter(p => p);
-        if (parts.length >= 5) {
-          addPlatform();
-          const lastPlatform = container.lastElementChild;
-          lastPlatform.querySelector('.platform-name').value = parts[0];
-          lastPlatform.querySelector('.metric-results').value = parts[1] || '0';
-          lastPlatform.querySelector('.metric-impressions').value = parts[2] || '0';
-          lastPlatform.querySelector('.metric-clicks').value = parts[3] || '0';
-          lastPlatform.querySelector('.metric-cost').value = parts[4] || '0';
+      lines.forEach(line => {
+        const cols = line.split('\t');
+        if (cols.length >= 5 && cols[0].trim()) {
+          platformData.push({
+            platform: cols[0].trim(),
+            results: parseFloat(cols[1]) || 0,
+            impressions: parseFloat(cols[2]) || 0,
+            clicks: parseFloat(cols[3]) || 0,
+            cost: parseFloat(cols[4]) || 0
+          });
         }
       });
       
-      switchTab('manual');
+      showDataPreview();
     }
-
-    function formatNumber(num) {
-      const n = Number(num);
-      if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
-      if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
-      return n.toLocaleString();
+    
+    // Update preview from manual entry
+    function updatePreview() {
+      platformData = [];
+      const rows = document.querySelectorAll('#manual-table-body tr');
+      
+      rows.forEach(row => {
+        const inputs = row.querySelectorAll('input');
+        const platform = inputs[0].value.trim();
+        if (platform) {
+          platformData.push({
+            platform,
+            results: parseFloat(inputs[1].value) || 0,
+            impressions: parseFloat(inputs[2].value) || 0,
+            clicks: parseFloat(inputs[3].value) || 0,
+            cost: parseFloat(inputs[4].value) || 0
+          });
+        }
+      });
+      
+      showDataPreview();
     }
-
+    
+    // Show data preview
+    function showDataPreview() {
+      const preview = document.getElementById('data-preview');
+      const previewBody = document.getElementById('preview-body');
+      
+      if (platformData.length === 0) {
+        preview.classList.add('hidden');
+        return;
+      }
+      
+      preview.classList.remove('hidden');
+      previewBody.innerHTML = platformData.map(d => `
+        <tr class="border-b border-slate-200">
+          <td class="px-3 py-2">${d.platform}</td>
+          <td class="px-3 py-2 text-right">${d.results.toLocaleString()}</td>
+          <td class="px-3 py-2 text-right">${d.impressions.toLocaleString()}</td>
+          <td class="px-3 py-2 text-right">${d.clicks.toLocaleString()}</td>
+          <td class="px-3 py-2 text-right">₹${d.cost.toLocaleString()}</td>
+        </tr>
+      `).join('');
+    }
+    
+    // Add key pointer
+    function addPointer() {
+      const container = document.getElementById('pointers-container');
+      const div = document.createElement('div');
+      div.className = 'flex gap-2 mb-2';
+      div.innerHTML = `
+        <input type="text" class="pointer-input flex-1 px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500" 
+          placeholder="Enter key insight or observation...">
+        <button onclick="this.parentElement.remove()" class="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-400">✕</button>
+      `;
+      container.appendChild(div);
+    }
+    
+    // Generate report
     function generateReport() {
-      const brandName = document.getElementById('brand-name').value || 'Your Brand';
-      const presenterName = document.getElementById('presenter-name').value || 'N/A';
-      const reportingPeriod = document.getElementById('reporting-period').value || 'Current Period';
+      const brandName = document.getElementById('brand-name').value.trim();
+      const presenterName = document.getElementById('presenter-name').value.trim();
+      const reportingPeriod = document.getElementById('reporting-period').value.trim();
+      const errorMsg = document.getElementById('error-msg');
       
-      const platforms = [];
-      let totalResults = 0, totalImpressions = 0, totalClicks = 0, totalCost = 0;
+      // Collect manual data if not already collected
+      if (platformData.length === 0) {
+        updatePreview();
+      }
       
-      document.querySelectorAll('[id^="platform-"]').forEach(el => {
-        const name = el.querySelector('.platform-name').value || 'Unnamed';
-        const results = parseFloat(el.querySelector('.metric-results').value) || 0;
-        const impressions = parseFloat(el.querySelector('.metric-impressions').value) || 0;
-        const clicks = parseFloat(el.querySelector('.metric-clicks').value) || 0;
-        const cost = parseFloat(el.querySelector('.metric-cost').value) || 0;
-        
-        totalResults += results;
-        totalImpressions += impressions;
-        totalClicks += clicks;
-        totalCost += cost;
-        
-        platforms.push({ name, results, impressions, clicks, cost });
+      // Collect key pointers
+      keyPointers = [];
+      document.querySelectorAll('.pointer-input').forEach(input => {
+        if (input.value.trim()) {
+          keyPointers.push(input.value.trim());
+        }
       });
       
-      const highlights = [];
-      document.querySelectorAll('.highlight-text').forEach(el => {
-        if (el.value.trim()) highlights.push(el.value.trim());
+      // Validation
+      if (!brandName) {
+        errorMsg.textContent = 'Please enter the Brand Name';
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+      if (!reportingPeriod) {
+        errorMsg.textContent = 'Please enter the Reporting Period';
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+      if (platformData.length === 0) {
+        errorMsg.textContent = 'Please enter at least one platform\'s data';
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+      
+      errorMsg.classList.add('hidden');
+      
+      // Populate report
+      document.getElementById('report-brand').textContent = brandName;
+      document.getElementById('report-period').textContent = reportingPeriod;
+      document.getElementById('report-presenter').textContent = presenterName ? `Presented by: ${presenterName}` : '';
+      
+      // Generate charts
+      generateDonutChart('chart-results', 'legend-results', platformData.map(d => ({ label: d.platform, value: d.results })), 95, true);
+      generateDonutChart('chart-cost', 'legend-cost', platformData.map(d => ({ label: d.platform, value: d.cost })), 60, false);
+      generateDonutChart('chart-impressions', null, platformData.map(d => ({ label: d.platform, value: d.impressions })), 40, false);
+      generateDonutChart('chart-clicks', null, platformData.map(d => ({ label: d.platform, value: d.clicks })), 40, false);
+      
+      // Generate table
+      generateDataTable();
+      
+      // Generate pointers
+      const pointersList = document.getElementById('pointers-list');
+      if (keyPointers.length > 0) {
+        pointersList.innerHTML = keyPointers.map(p => `<li>${p}</li>`).join('');
+        document.getElementById('report-pointers').classList.remove('hidden');
+      } else {
+        document.getElementById('report-pointers').classList.add('hidden');
+      }
+      
+      showPage(3);
+    }
+    
+    // Generate donut chart
+    function generateDonutChart(svgId, legendId, data, radius, showLabels) {
+      const svg = document.getElementById(svgId);
+      const total = data.reduce((sum, d) => sum + d.value, 0);
+      
+      if (total === 0) {
+        svg.innerHTML = `<text x="50%" y="50%" text-anchor="middle" fill="#94a3b8" font-size="12">No Data</text>`;
+        return;
+      }
+      
+      const cx = radius;
+      const cy = radius;
+      const innerRadius = radius * 0.55;
+      const outerRadius = radius * 0.9;
+      
+      let currentAngle = -90;
+      let paths = '';
+      let labels = '';
+      
+      data.forEach((d, i) => {
+        const percentage = d.value / total;
+        const angle = percentage * 360;
+        const startAngle = currentAngle;
+        const endAngle = currentAngle + angle;
+        
+        const start = polarToCartesian(cx, cy, outerRadius, startAngle);
+        const end = polarToCartesian(cx, cy, outerRadius, endAngle);
+        const innerStart = polarToCartesian(cx, cy, innerRadius, startAngle);
+        const innerEnd = polarToCartesian(cx, cy, innerRadius, endAngle);
+        
+        const largeArc = angle > 180 ? 1 : 0;
+        
+        paths += `<path d="M ${start.x} ${start.y} A ${outerRadius} ${outerRadius} 0 ${largeArc} 1 ${end.x} ${end.y} L ${innerEnd.x} ${innerEnd.y} A ${innerRadius} ${innerRadius} 0 ${largeArc} 0 ${innerStart.x} ${innerStart.y} Z" fill="${chartColors[i % chartColors.length]}"/>`;
+        
+        currentAngle = endAngle;
       });
       
-      const ctr = totalImpressions > 0 ? ((totalClicks / totalImpressions) * 100).toFixed(2) : '0.00';
-      const cpc = totalClicks > 0 ? (totalCost / totalClicks).toFixed(2) : '0.00';
-      const cpr = totalResults > 0 ? (totalCost / totalResults).toFixed(2) : '0.00';
-      const resultRate = totalImpressions > 0 ? ((totalResults / totalImpressions) * 100).toFixed(2) : '0.00';
+      // Center text
+      const totalFormatted = total >= 1000000 ? (total / 1000000).toFixed(1) + 'M' : 
+                             total >= 1000 ? (total / 1000).toFixed(1) + 'K' : total.toLocaleString();
       
-      chartsData = { platforms, totalResults, totalImpressions, totalClicks, totalCost };
-      
-      const reportHTML = `
-        <div class="p-8 max-w-7xl mx-auto">
-          <!-- Header Section -->
-          <div class="bg-white rounded-2xl shadow-lg p-8 mb-8 border-l-4 border-purple-500">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div>
-                <p class="text-slate-500 text-sm font-semibold mb-1">Brand</p>
-                <h2 class="heading-font text-3xl font-bold text-slate-900">${brandName}</h2>
-              </div>
-              <div>
-                <p class="text-slate-500 text-sm font-semibold mb-1">Presenter</p>
-                <p class="text-xl font-semibold text-slate-800">${presenterName}</p>
-              </div>
-              <div>
-                <p class="text-slate-500 text-sm font-semibold mb-1">Reporting Period</p>
-                <p class="text-xl font-semibold text-slate-800">${reportingPeriod}</p>
-              </div>
-            </div>
-          </div>
-          
-          <!-- Key Metrics Section -->
-          <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-            <div class="stat-card p-6">
-              <p class="text-slate-500 text-sm font-semibold mb-2">Results</p>
-              <p class="heading-font text-3xl font-bold text-purple-600">${formatNumber(totalResults)}</p>
-            </div>
-            <div class="stat-card p-6">
-              <p class="text-slate-500 text-sm font-semibold mb-2">Impressions</p>
-              <p class="heading-font text-3xl font-bold text-purple-600">${formatNumber(totalImpressions)}</p>
-            </div>
-            <div class="stat-card p-6">
-              <p class="text-slate-500 text-sm font-semibold mb-2">Clicks</p>
-              <p class="heading-font text-3xl font-bold text-purple-600">${formatNumber(totalClicks)}</p>
-            </div>
-            <div class="stat-card p-6">
-              <p class="text-slate-500 text-sm font-semibold mb-2">Total Spend</p>
-              <p class="heading-font text-3xl font-bold text-purple-600">₹${formatNumber(totalCost)}</p>
-            </div>
-            <div class="stat-card p-6">
-              <p class="text-slate-500 text-sm font-semibold mb-2">CTR</p>
-              <p class="heading-font text-3xl font-bold text-purple-600">${ctr}%</p>
-            </div>
-          </div>
-          
-          <!-- Charts Section -->
-          <div class="bg-white rounded-2xl shadow-lg p-8 mb-8">
-            <h3 class="heading-font text-2xl font-bold text-slate-900 mb-8">Platform Performance Distribution</h3>
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              <!-- Large Results Chart -->
-              <div class="lg:col-span-2">
-                <div class="bg-white border border-slate-200 rounded-xl p-6 h-96">
-                  <canvas id="resultsChart"></canvas>
-                </div>
-                <div class="chart-label mt-4 text-lg">
-                  <span class="font-bold text-purple-600">Platform-wise Results Distribution</span><br>
-                  <span class="text-slate-600">Total: ${formatNumber(totalResults)}</span>
-                </div>
-              </div>
-              
-              <!-- Right Column Charts -->
-              <div class="space-y-6">
-                <!-- Cost Chart -->
-                <div>
-                  <div class="bg-white border border-slate-200 rounded-xl p-6 h-80">
-                    <canvas id="costChart"></canvas>
-                  </div>
-                  <div class="chart-label mt-3">
-                    <span class="font-bold text-purple-600">Platform-wise Cost</span><br>
-                    <span class="text-slate-600 text-sm">Total: ₹${formatNumber(totalCost)}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <!-- Second Row of Charts -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
-              <!-- Impressions Chart -->
-              <div>
-                <div class="bg-white border border-slate-200 rounded-xl p-6 h-80">
-                  <canvas id="impressionsChart"></canvas>
-                </div>
-                <div class="chart-label mt-3">
-                  <span class="font-bold text-purple-600">Platform-wise Impressions</span><br>
-                  <span class="text-slate-600 text-sm">Total: ${formatNumber(totalImpressions)}</span>
-                </div>
-              </div>
-              
-              <!-- Clicks Chart -->
-              <div>
-                <div class="bg-white border border-slate-200 rounded-xl p-6 h-80">
-                  <canvas id="clicksChart"></canvas>
-                </div>
-                <div class="chart-label mt-3">
-                  <span class="font-bold text-purple-600">Platform-wise Clicks</span><br>
-                  <span class="text-slate-600 text-sm">Total: ${formatNumber(totalClicks)}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <!-- Data Table Section -->
-          <div class="bg-white rounded-2xl shadow-lg p-8 mb-8 overflow-x-auto">
-            <h3 class="heading-font text-2xl font-bold text-slate-900 mb-6">Detailed Performance Data</h3>
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Platform</th>
-                  <th>Results</th>
-                  <th>Impressions</th>
-                  <th>Clicks</th>
-                  <th>Cost (₹)</th>
-                  <th>CPR</th>
-                  <th>Result Rate</th>
-                  <th>CTR</th>
-                  <th>CPC</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${platforms.map(p => {
-                  const pCTR = p.impressions > 0 ? ((p.clicks / p.impressions) * 100).toFixed(2) : '0.00';
-                  const pCPC = p.clicks > 0 ? (p.cost / p.clicks).toFixed(2) : '0.00';
-                  const pCPR = p.results > 0 ? (p.cost / p.results).toFixed(2) : '0.00';
-                  const pResultRate = p.impressions > 0 ? ((p.results / p.impressions) * 100).toFixed(2) : '0.00';
-                  return `
-                    <tr>
-                      <td class="font-semibold text-purple-600">${p.name}</td>
-                      <td>${formatNumber(p.results)}</td>
-                      <td>${formatNumber(p.impressions)}</td>
-                      <td>${formatNumber(p.clicks)}</td>
-                      <td>₹${formatNumber(p.cost)}</td>
-                      <td>₹${pCPR}</td>
-                      <td>${pResultRate}%</td>
-                      <td>${pCTR}%</td>
-                      <td>₹${pCPC}</td>
-                    </tr>
-                  `;
-                }).join('')}
-                <tr style="background: #f8fafc; font-weight: bold;">
-                  <td>TOTAL</td>
-                  <td>${formatNumber(totalResults)}</td>
-                  <td>${formatNumber(totalImpressions)}</td>
-                  <td>${formatNumber(totalClicks)}</td>
-                  <td>₹${formatNumber(totalCost)}</td>
-                  <td>₹${cpr}</td>
-                  <td>${resultRate}%</td>
-                  <td>${ctr}%</td>
-                  <td>₹${cpc}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          
-          <!-- Key Insights Section -->
-          ${highlights.length > 0 ? `
-            <div class="bg-white rounded-2xl shadow-lg p-8 mb-8 border-t-4 border-purple-500">
-              <h3 class="heading-font text-2xl font-bold text-slate-900 mb-6">💡 Key Insights & Recommendations</h3>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                ${highlights.map(h => `
-                  <div class="flex gap-4 p-4 rounded-lg bg-purple-50 border border-purple-100">
-                    <div class="w-2 h-2 rounded-full bg-purple-500 flex-shrink-0 mt-2"></div>
-                    <p class="text-slate-700">${h}</p>
-                  </div>
-                `).join('')}
-              </div>
-            </div>
-          ` : ''}
-          
-          <!-- Footer -->
-          <div class="text-center py-8 border-t border-slate-200 text-slate-500 text-sm">
-            <p>Report generated on ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
-            <p class="mt-2">${brandName} • ${reportingPeriod}</p>
-          </div>
-        </div>
+      svg.innerHTML = `
+        ${paths}
+        <text x="${cx}" y="${cy - 5}" text-anchor="middle" fill="#1e293b" font-size="${radius > 60 ? 14 : 10}" font-weight="bold">Total</text>
+        <text x="${cx}" y="${cy + 12}" text-anchor="middle" fill="#1e293b" font-size="${radius > 60 ? 16 : 11}" font-weight="bold">${totalFormatted}</text>
       `;
       
-      document.getElementById('report-content').innerHTML = reportHTML;
-      showReport();
-      
-      setTimeout(() => {
-        initCharts();
-      }, 100);
+      // Legend
+      if (legendId) {
+        const legend = document.getElementById(legendId);
+        legend.innerHTML = data.map((d, i) => {
+          const pct = ((d.value / total) * 100).toFixed(1);
+          return `<span class="inline-flex items-center mr-3 mb-1">
+            <span class="w-3 h-3 rounded-full mr-1" style="background:${chartColors[i % chartColors.length]}"></span>
+            <span class="text-slate-600">${d.label}: ${pct}%</span>
+          </span>`;
+        }).join('');
+      }
     }
-
-    function initCharts() {
-      const colors = ['#667eea', '#764ba2', '#f093fb', '#a78bfa', '#ec4899'];
-      const { platforms, totalResults, totalImpressions, totalClicks, totalCost } = chartsData;
-      
-      const chartConfig = {
-        maintainAspectRatio: false,
-        responsive: true,
-        plugins: {
-          legend: {
-            position: 'bottom',
-            labels: {
-              boxWidth: 12,
-              padding: 15,
-              font: { size: 12, weight: '500' },
-              color: '#4b5563'
-            }
-          }
-        }
+    
+    function polarToCartesian(cx, cy, r, angleDeg) {
+      const angleRad = (angleDeg * Math.PI) / 180;
+      return {
+        x: cx + r * Math.cos(angleRad),
+        y: cy + r * Math.sin(angleRad)
       };
-      
-      // Results Chart
-      if (document.getElementById('resultsChart')) {
-        new Chart(document.getElementById('resultsChart'), {
-          type: 'doughnut',
-          data: {
-            labels: platforms.map(p => p.name),
-            datasets: [{
-              data: platforms.map(p => p.results),
-              backgroundColor: colors,
-              borderColor: 'white',
-              borderWidth: 2
-            }]
-          },
-          options: chartConfig
-        });
-      }
-      
-      // Cost Chart
-      if (document.getElementById('costChart')) {
-        new Chart(document.getElementById('costChart'), {
-          type: 'doughnut',
-          data: {
-            labels: platforms.map(p => p.name),
-            datasets: [{
-              data: platforms.map(p => p.cost),
-              backgroundColor: colors,
-              borderColor: 'white',
-              borderWidth: 2
-            }]
-          },
-          options: chartConfig
-        });
-      }
-      
-      // Impressions Chart
-      if (document.getElementById('impressionsChart')) {
-        new Chart(document.getElementById('impressionsChart'), {
-          type: 'doughnut',
-          data: {
-            labels: platforms.map(p => p.name),
-            datasets: [{
-              data: platforms.map(p => p.impressions),
-              backgroundColor: colors,
-              borderColor: 'white',
-              borderWidth: 2
-            }]
-          },
-          options: chartConfig
-        });
-      }
-      
-      // Clicks Chart
-      if (document.getElementById('clicksChart')) {
-        new Chart(document.getElementById('clicksChart'), {
-          type: 'doughnut',
-          data: {
-            labels: platforms.map(p => p.name),
-            datasets: [{
-              data: platforms.map(p => p.clicks),
-              backgroundColor: colors,
-              borderColor: 'white',
-              borderWidth: 2
-            }]
-          },
-          options: chartConfig
-        });
-      }
     }
-
-    function savePDF() {
-      const btn = document.getElementById('pdf-btn');
-      const btnText = document.getElementById('pdf-text');
-      const original = btnText.textContent;
+    
+    // Generate data table
+    function generateDataTable() {
+      const tbody = document.getElementById('report-table-body');
+      const tfoot = document.getElementById('report-table-footer');
       
-      btn.disabled = true;
-      btnText.textContent = 'Generating...';
+      let totals = { results: 0, cost: 0, impressions: 0, clicks: 0 };
       
-      try {
-        window.print();
-        btnText.textContent = 'Ready to Print';
-        setTimeout(() => {
-          btn.disabled = false;
-          btnText.textContent = original;
-        }, 2000);
-      } catch (err) {
-        console.error('Print error:', err);
-        btnText.textContent = 'Error - Try Again';
-        setTimeout(() => {
-          btn.disabled = false;
-          btnText.textContent = original;
-        }, 2000);
-      }
+      tbody.innerHTML = platformData.map((d, i) => {
+        totals.results += d.results;
+        totals.cost += d.cost;
+        totals.impressions += d.impressions;
+        totals.clicks += d.clicks;
+        
+        const cpr = d.results > 0 ? (d.cost / d.results).toFixed(2) : '-';
+        const resultRate = d.impressions > 0 ? ((d.results / d.impressions) * 100).toFixed(2) + '%' : '-';
+        const ctr = d.impressions > 0 ? ((d.clicks / d.impressions) * 100).toFixed(2) + '%' : '-';
+        const cpc = d.clicks > 0 ? (d.cost / d.clicks).toFixed(2) : '-';
+        
+        return `
+          <tr class="${i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}">
+            <td class="px-2 py-2 border font-medium">
+              <span class="inline-block w-3 h-3 rounded-full mr-2" style="background:${chartColors[i % chartColors.length]}"></span>
+              ${d.platform}
+            </td>
+            <td class="px-2 py-2 border text-right">${d.results.toLocaleString()}</td>
+            <td class="px-2 py-2 border text-right">₹${d.cost.toLocaleString()}</td>
+            <td class="px-2 py-2 border text-right">${d.impressions.toLocaleString()}</td>
+            <td class="px-2 py-2 border text-right">${d.clicks.toLocaleString()}</td>
+            <td class="px-2 py-2 border text-right">₹${cpr}</td>
+            <td class="px-2 py-2 border text-right">${resultRate}</td>
+            <td class="px-2 py-2 border text-right">${ctr}</td>
+            <td class="px-2 py-2 border text-right">₹${cpc}</td>
+          </tr>
+        `;
+      }).join('');
+      
+      // Totals row
+      const totalCpr = totals.results > 0 ? (totals.cost / totals.results).toFixed(2) : '-';
+      const totalResultRate = totals.impressions > 0 ? ((totals.results / totals.impressions) * 100).toFixed(2) + '%' : '-';
+      const totalCtr = totals.impressions > 0 ? ((totals.clicks / totals.impressions) * 100).toFixed(2) + '%' : '-';
+      const totalCpc = totals.clicks > 0 ? (totals.cost / totals.clicks).toFixed(2) : '-';
+      
+      tfoot.innerHTML = `
+        <tr class="bg-slate-200 font-bold">
+          <td class="px-2 py-2 border">Total</td>
+          <td class="px-2 py-2 border text-right">${totals.results.toLocaleString()}</td>
+          <td class="px-2 py-2 border text-right">₹${totals.cost.toLocaleString()}</td>
+          <td class="px-2 py-2 border text-right">${totals.impressions.toLocaleString()}</td>
+          <td class="px-2 py-2 border text-right">${totals.clicks.toLocaleString()}</td>
+          <td class="px-2 py-2 border text-right">₹${totalCpr}</td>
+          <td class="px-2 py-2 border text-right">${totalResultRate}</td>
+          <td class="px-2 py-2 border text-right">${totalCtr}</td>
+          <td class="px-2 py-2 border text-right">₹${totalCpc}</td>
+        </tr>
+      `;
     }
+    
+    // Download PDF
+    function downloadPDF() {
+      window.print();
+    }
+    
+    // Initialize
+    updateUI();
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9d1db749034179f8',t:'MTc3MTc1NTI2MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9d58327145e3613f',t:'MTc3MjM2ODQ3OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
